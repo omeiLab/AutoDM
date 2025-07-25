@@ -8,3 +8,5 @@ A platform for automatically data mining.
 ## Update Log
 
 - **2025-07-24**: Initial release. Enable to upload CSV files for data and preview.
+
+- **2025-07-25**: Basic EDA, descriptive statistics add.

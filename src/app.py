@@ -1,5 +1,5 @@
 import streamlit as st
-from module.data_loader import page_upload_data
+from page.upload_data import page_upload_data
 
 def page_intro():
 
