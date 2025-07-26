@@ -26,7 +26,7 @@ def preview(uploaded_file):
                 data = dl.load_data(uploaded_file)
                 st.success("Data uploaded successfully!")
                 st.write("## Data Preview")      
-                st.dataframe(data.head())
+                st.dataframe(data.head(5))
                 return data
             except:
                 st.error("Error loading data. Please check your file and try again.")
@@ -54,12 +54,18 @@ def data_summary(data):
                 st.markdown(f"""
                     **Column Information**
 
-                    - 📂 Data Type: {summary["dtype"][0]}
-                    - ❓ Missing Ratio: {(overview['missing_by_column'][col_name]/overview['rows']):.1%}
+                        - 📂 Data Type: {summary["dtype"][0]}
+                        - ❓ Missing Ratio: {(overview['missing_by_column'][col_name]/overview['rows']):.1%}
                     """)
                 if summary["dtype"][0] == "numerical":
                     descriptive = pd.DataFrame(summary)
                     descriptive = descriptive.drop(['dtype'], axis=1)
                     st.dataframe(descriptive)
+
+                    # visualization
+                    plot = eda.plot_numeric(col_name)
+                    st.pyplot(plot)
                 else:
-                    st.write("This column is not numerical, no summary available.")
+                    # visualization
+                    plot = eda.plot_categorical(col_name)
+                    st.pyplot(plot)
