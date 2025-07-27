@@ -1,41 +1,28 @@
 import streamlit as st
 import pandas as pd
-from module.data_loader import DataLoader
 from module.eda_analyser import EdaAnalyser
 
-def page_upload_data():
+def page_univariate_eda():
     '''
-    Upload data page for the app.
+    Perform univariate EDA on uploaded data.
     '''
-    st.write("# Upload Data")
-    uploaded_file = st.file_uploader(
-        "Please upload your data here. We accept tabular **CSV files** only.", 
-        accept_multiple_files=False,
-        type = ['csv']
-    )
-    data = preview(uploaded_file)
+    st.title("Univariate EDA")
+    if "data" not in st.session_state or st.session_state["data"] is None:
+        st.warning("Upload your data first.")
+        st.stop()
 
-    st.write("## Data Summary")      
+    data = st.session_state["data"]
+    preview(data)
     data_summary(data)
 
-def preview(uploaded_file):
-    if uploaded_file is not None:
-        if uploaded_file.type == "text/csv":
-            try:
-                dl = DataLoader()
-                data = dl.load_data(uploaded_file)
-                st.success("Data uploaded successfully!")
-                st.write("## Data Preview")      
-                st.dataframe(data.head(5))
-                return data
-            except:
-                st.error("Error loading data. Please check your file and try again.")
-        else:
-            st.warning("Invalide file type. Please upload a CSV file.")
-            return None
+
+def preview(data):
+    st.write("## Data Preview")      
+    st.dataframe(data.head(5))
 
 def data_summary(data):
     if data is not None:
+        st.write("## Data Summary")  
         eda = EdaAnalyser(data)
         overview = eda.summarize_overview()
 

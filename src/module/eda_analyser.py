@@ -1,13 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import re
 
 class EdaAnalyser:
     def __init__(self, df):
         self.df = df
         self.dtypes = {}
-        self.cast_object()
         self.classify_columns()
 
     def summarize_overview(self) -> dict:
@@ -20,28 +18,6 @@ class EdaAnalyser:
             "missing_values": self.df.isnull().sum().sum(),
             "missing_by_column": self.df.isnull().sum().to_dict()
         }
-
-    def cast_object(self):
-        '''
-        Try to cast every oject column to numeric.
-        '''
-        for col in self.df.columns:
-            if self.df[col].dtype == "object":
-                self.df[col] = self.try_cast_numeric(self.df[col])
-
-    def try_cast_numeric(self, series: pd.Series) -> pd.Series:
-        cleaned = (
-            series.astype(str)
-            .str.replace(",", "", regex=False)  # remove ,
-            .str.replace("%", "", regex=False)  # remove %
-            .str.replace("$", "", regex=False)  # remove $
-        )
-
-        try:
-            numeric = pd.to_numeric(cleaned, errors="raise")
-            return numeric
-        except Exception:
-            return series  # return original series if casting fails
 
     def classify_columns(self, cat_threshold=10):
         for col in self.df.columns:
