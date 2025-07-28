@@ -13,6 +13,7 @@ def page_bivariate_eda():
     
     # choose columns
     st.write("## Data Relationships Analysis")
+    st.write("Select two features to compare their relationships.")
     f1, f2 = st.columns(2)
     with f1:
         col1 = st.selectbox("📌 Feature 1", data.columns, key="bivariate_col1")
@@ -26,14 +27,28 @@ def preview(data):
     st.dataframe(data.head(5))
 
 def show_relationship(data, f1, f2):
+    '''
+    Analysis status:
+        - 1: numerical vs numerical,        summary = correlation coefficient
+        - 2: numerical vs categorical,      summary = groupby analysis
+        - 3: categorical vs categorical,    
+    '''
     if f1 == f2:
         st.warning("Cannot compare a feature with itself.")
         st.stop()
     eda = BivariateAnalyser(data)
-    plot, corr = eda.analyse(f1, f2)
-    st.markdown(f"""
-    ```
-    Correlation Coefficient: {corr:.4f}
-    ```
-    """)
-    st.pyplot(plot)
+    status, plot, summary = eda.analyse(f1, f2)
+
+    if status == 1:
+        st.markdown(f"""
+        ```
+        Correlation Coefficient: {summary:.4f}
+        ```
+        """)
+        st.pyplot(plot)
+    elif status == 2:
+        with st.expander("Groupby Analysis"):
+            st.dataframe(summary)
+        st.pyplot(plot)
+    elif status == 3:
+        st.info("Not implemented yet.")

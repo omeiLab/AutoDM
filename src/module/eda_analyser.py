@@ -70,7 +70,7 @@ class EdaAnalyser:
 
         return fig
 
-    def plot_categorical(self, col_name, k = 5):
+    def plot_categorical(self, col_name, k = 10):
         series = self.df[col_name].dropna()
 
         # take top-K
