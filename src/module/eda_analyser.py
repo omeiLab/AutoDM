@@ -19,7 +19,7 @@ class EdaAnalyser:
             "missing_by_column": self.df.isnull().sum().to_dict()
         }
 
-    def classify_columns(self, cat_threshold=10):
+    def classify_columns(self, cat_threshold=20):
         for col in self.df.columns:
             series = self.df[col].dropna()
 
@@ -69,9 +69,15 @@ class EdaAnalyser:
         ax[1].set_title(f"Boxplot of {col_name}")
 
         return fig
+    
+    def is_high_cardinality(self, s, threshold=0.5):
+        return s.nunique() / len(s) > threshold
 
     def plot_categorical(self, col_name, k = 10):
         series = self.df[col_name].dropna()
+
+        if self.is_high_cardinality(series):
+            return None
 
         # take top-K
         k = min(k, series.nunique())

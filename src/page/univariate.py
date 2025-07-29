@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from module.eda_analyser import EdaAnalyser
 
 def page_univariate_eda():
@@ -52,7 +53,13 @@ def data_summary(data):
                     # visualization
                     plot = eda.plot_numeric(col_name)
                     st.pyplot(plot)
+                    plt.close(plot)
                 else:
                     # visualization
                     plot = eda.plot_categorical(col_name)
-                    st.pyplot(plot)
+
+                    if plot is not None:
+                        st.pyplot(plot)
+                        plt.close(plot)
+                    else:
+                        st.warning("High Cardinality. Too many categories to plot.")
