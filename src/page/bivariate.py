@@ -41,10 +41,22 @@ def show_relationship(data, f1, f2):
         st.stop()
     eda = BivariateAnalyser(data)
     status, plot, summary = eda.analyse(f1, f2)
+
     if status == -1:
         st.warning(f"High Cardinality. Cannot perform analysis.")
         st.stop()
+
     elif status == 1:
+        use_hue = st.checkbox("Enable hue (label coloring)")
+        label_col = None
+        if use_hue:
+            candidates = [c for c in data.columns if eda.dtypes[c] == "categorical"]
+            if candidates:
+                label_col = st.selectbox("Select label column for hue", candidates)
+                _, plot, summary = eda.analyse(f1, f2, label_col)
+            else:
+                st.warning("No valid categorical columns available for hue.")
+
         st.markdown(f"""
         ```
         Correlation Coefficient: {summary:.4f}

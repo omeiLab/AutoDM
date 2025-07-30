@@ -40,7 +40,7 @@ class BivariateAnalyser:
     def is_high_cardinality(self, series, threshold=0.5):
         return series.nunique() / len(series) > threshold
 
-    def analyse(self, col1, col2):
+    def analyse(self, col1, col2, hue_col = None):
         '''
         Status:
             - 1: numerical vs numerical
@@ -50,7 +50,7 @@ class BivariateAnalyser:
             - -1: high cardinality categorical variable
         '''
         if self.dtypes[col1] == "numerical" and self.dtypes[col2] == "numerical":
-            fig, corr = self.num_num_analysis(col1, col2)
+            fig, corr = self.num_num_analysis(col1, col2, hue_col)
             return 1, fig, corr
         
         elif self.dtypes[col1] == "numerical" and self.dtypes[col2] == "categorical":
@@ -72,16 +72,17 @@ class BivariateAnalyser:
             return 3, fig, test_result
         
 
-    def num_num_analysis(self, col1: str, col2: str):
+    def num_num_analysis(self, col1: str, col2: str, hue_col = None):
         '''
         Plot numerical vs numerical data & calculate correlation coefficient
         '''
-        clean_df = self.df[[col1, col2]].dropna()
+        clean_df = self.df[[col1, col2, hue_col]] if hue_col else self.df[[col1, col2]]
+        clean_df = clean_df.dropna()
 
         fig, ax = plt.subplots(1, 2, figsize = (12, 6))
 
         # scatter plot
-        sns.scatterplot(x = col1, y = col2, data = clean_df, ax = ax[0])
+        sns.scatterplot(x = col1, y = col2, data = clean_df, ax = ax[0], hue = hue_col)
         ax[0].set_title(f'Scatter plot')
 
         # regplot
