@@ -14,52 +14,52 @@ def page_univariate_eda():
 
     data = st.session_state["data"]
     preview(data)
-    data_summary(data)
 
+    eda = EdaAnalyser(data)
+    data_summary(eda)
 
+@st.cache_data
 def preview(data):
     st.write("## Data Preview")      
     st.dataframe(data.head(5))
 
-def data_summary(data):
-    if data is not None:
-        st.write("## Data Summary")  
-        eda = EdaAnalyser(data)
-        overview = eda.summarize_overview()
+def data_summary(eda):
+    st.write("## Data Summary")  
+    overview = eda.summarize_overview()
 
-        # Use st.metrics to perform 
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Rows", f"{overview['rows']}")
-        col2.metric("Columns", f"{overview['columns']}")
-        col3.metric("Missing Values", f"{overview['missing_values']}")
+    # Use st.metrics to perform 
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Rows", f"{overview['rows']}")
+    col2.metric("Columns", f"{overview['columns']}")
+    col3.metric("Missing Values", f"{overview['missing_values']}")
 
-        # Use st.tabs to show details of columns
-        cols = data.columns.tolist()
-        tabs = st.tabs(cols)
-        for col_name, tab in zip(cols, tabs):
-            with tab:
-                summary = eda.describe_numeric(col_name)
-                st.markdown(f"""
-                    **Column Information**
+    # Use st.tabs to show details of columns
+    cols = eda.df.columns.tolist()
+    tabs = st.tabs(cols)
+    for col_name, tab in zip(cols, tabs):
+        with tab:
+            summary = eda.describe_numeric(col_name)
+            st.markdown(f"""
+                **Column Information**
+                
+                    - 📂 Data Type: {summary["dtype"][0]}
+                    - ❓ Missing Ratio: {(overview['missing_by_column'][col_name]/overview['rows']):.1%}
+                """)
+            if summary["dtype"][0] == "numerical":
+                descriptive = pd.DataFrame(summary)
+                descriptive = descriptive.drop(['dtype'], axis=1)
+                st.dataframe(descriptive)
 
-                        - 📂 Data Type: {summary["dtype"][0]}
-                        - ❓ Missing Ratio: {(overview['missing_by_column'][col_name]/overview['rows']):.1%}
-                    """)
-                if summary["dtype"][0] == "numerical":
-                    descriptive = pd.DataFrame(summary)
-                    descriptive = descriptive.drop(['dtype'], axis=1)
-                    st.dataframe(descriptive)
+                # visualization
+                plot = eda.plot_numeric(col_name)
+                st.pyplot(plot)
+                plt.close(plot)
+            else:
+                # visualization
+                plot = eda.plot_categorical(col_name)
 
-                    # visualization
-                    plot = eda.plot_numeric(col_name)
+                if plot is not None:
                     st.pyplot(plot)
                     plt.close(plot)
                 else:
-                    # visualization
-                    plot = eda.plot_categorical(col_name)
-
-                    if plot is not None:
-                        st.pyplot(plot)
-                        plt.close(plot)
-                    else:
-                        st.warning("High Cardinality. Too many categories to plot.")
+                    st.warning("High Cardinality. Too many categories to plot.")

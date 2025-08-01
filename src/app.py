@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from module.data_loader import DataLoader
 from page.univariate import page_univariate_eda
 from page.bivariate import page_bivariate_eda
@@ -37,12 +38,18 @@ def upload_data():
     data = preview(uploaded_file)
     st.session_state["data"] = data
 
+@st.cache_data
+def load_and_cast(file) -> pd.DataFrame:
+    df = pd.read_csv(file)
+    loader = DataLoader(df)
+    loader.cast_object()
+    return loader.data
+
 def preview(uploaded_file):
     if uploaded_file is not None:
         if uploaded_file.type == "text/csv":
             try:
-                dl = DataLoader()
-                data = dl.load_data(uploaded_file)
+                data = load_and_cast(uploaded_file)
                 st.success("Data uploaded successfully!")
                 st.write("### Data Preview")      
                 st.dataframe(data.head(5))

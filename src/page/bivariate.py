@@ -21,13 +21,28 @@ def page_bivariate_eda():
     with f2:
         col2 = st.selectbox("📌 Feature 2", data.columns, key="bivariate_col2")
 
-    show_relationship(data, col1, col2)
+    eda = BivariateAnalyser(data)
+    show_relationship(eda, col1, col2)
 
+@st.cache_data
 def preview(data):
     st.write("## Data Preview")      
     st.dataframe(data.head(5))
 
-def show_relationship(data, f1, f2):
+def enable_hue(eda, f1, f2):
+    use_hue = st.checkbox("Enable hue (label coloring)")
+    label_col = None
+    if use_hue:
+        candidates = [c for c in eda.df.columns if eda.dtypes[c] == "categorical" and c not in [f1, f2]]
+        if candidates:
+            label_col = st.selectbox("Select label column for hue", candidates)
+            return label_col
+        else:
+            st.warning("No valid categorical columns available for hue.")
+            return None
+    return None
+
+def show_relationship(eda, f1, f2):
     '''
     Analysis status:
         - 1: numerical vs numerical,     summary = correlation coefficient
@@ -39,7 +54,7 @@ def show_relationship(data, f1, f2):
     if f1 == f2:
         st.warning("Cannot compare a feature with itself.")
         st.stop()
-    eda = BivariateAnalyser(data)
+    
     status, plot, summary = eda.analyse(f1, f2)
 
     if status == -1:
@@ -47,15 +62,9 @@ def show_relationship(data, f1, f2):
         st.stop()
 
     elif status == 1:
-        use_hue = st.checkbox("Enable hue (label coloring)")
-        label_col = None
-        if use_hue:
-            candidates = [c for c in data.columns if eda.dtypes[c] == "categorical"]
-            if candidates:
-                label_col = st.selectbox("Select label column for hue", candidates)
-                _, plot, summary = eda.analyse(f1, f2, label_col)
-            else:
-                st.warning("No valid categorical columns available for hue.")
+        label_col = enable_hue(eda, f1, f2)
+        if label_col is not None:
+            _, plot, summary = eda.analyse(f1, f2, label_col)
 
         st.markdown(f"""
         ```
@@ -66,6 +75,10 @@ def show_relationship(data, f1, f2):
         plt.close(plot)
 
     elif status == 2:
+        label_col = enable_hue(eda, f1, f2)
+        if label_col is not None:
+            _, plot, summary = eda.analyse(f1, f2, label_col)
+
         with st.expander("Groupby Analysis"):
             st.dataframe(summary)
         st.pyplot(plot)

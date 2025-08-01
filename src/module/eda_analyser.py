@@ -2,6 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+plt.style.use('seaborn-v0_8-whitegrid')
+
 class EdaAnalyser:
     def __init__(self, df):
         self.df = df
@@ -68,6 +70,7 @@ class EdaAnalyser:
         sns.boxplot(series, ax=ax[1], color="skyblue")
         ax[1].set_title(f"Boxplot of {col_name}")
 
+        plt.tight_layout()
         return fig
     
     def is_high_cardinality(self, s, threshold=0.5):
@@ -92,9 +95,11 @@ class EdaAnalyser:
 
         # count plot
         sns.barplot(x=plot_data.index, y=plot_data.values, ax=ax[0], color="skyblue")
+        ax[0].tick_params(axis='x', rotation=45)
         ax[0].set_title(f"Count of {col_name}")
 
         # pie plot
-        ax[1].pie(plot_data.values, labels=plot_data.index, autopct='%1.1f%%', startangle=140)
+        ax[1].pie(plot_data.values, labels=plot_data.index, startangle=140, pctdistance=0.8,)
 
+        plt.tight_layout()
         return fig

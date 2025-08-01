@@ -56,13 +56,13 @@ class BivariateAnalyser:
         elif self.dtypes[col1] == "numerical" and self.dtypes[col2] == "categorical":
             if self.is_high_cardinality(self.df[col2]):
                 return -1, None, None
-            fig, summary_df = self.num_cat_analysis(col1, col2)
+            fig, summary_df = self.num_cat_analysis(col1, col2, hue_col=hue_col)
             return 2, fig, summary_df
         
         elif self.dtypes[col1] == "categorical" and self.dtypes[col2] == "numerical":
             if self.is_high_cardinality(self.df[col1]):
                 return -1, None, None
-            fig, summary_df = self.num_cat_analysis(col2, col1)
+            fig, summary_df = self.num_cat_analysis(col2, col1, hue_col=hue_col)
             return 2, fig, summary_df
         
         elif self.dtypes[col1] == "categorical" and self.dtypes[col2] == "categorical":
@@ -92,13 +92,15 @@ class BivariateAnalyser:
         # correlation coefficient
         corr_coef = clean_df[col1].corr(clean_df[col2])
 
+        plt.tight_layout()
         return fig, corr_coef
     
-    def num_cat_analysis(self, col1: str, col2: str, k = 10):
+    def num_cat_analysis(self, col1: str, col2: str, k = 10, hue_col = None):
         '''
         please make sure that col1 is numerical and col2 is categorical
         '''
-        clean_df = self.df[[col1, col2]].dropna()
+        clean_df = self.df[[col1, col2, hue_col]] if hue_col else self.df[[col1, col2]]
+        clean_df = clean_df.dropna()
 
         # take top-K
         clean_df[col2] = self.compress_categories(clean_df[col2], k)
@@ -108,10 +110,12 @@ class BivariateAnalyser:
         # box plot
         sns.boxplot(x = col2, y = col1, data = clean_df, ax = ax[0])
         ax[0].set_title(f'Box plot')
+        ax[0].tick_params(axis='x', rotation=45)
 
         # strip plot
-        sns.stripplot(x = col2, y = col1, data = clean_df, ax = ax[1], jitter = True)
+        sns.stripplot(x = col2, y = col1, data = clean_df, ax = ax[1], jitter = True, hue=hue_col, dodge=True)
         ax[1].set_title(f'Strip plot')
+        ax[1].tick_params(axis='x', rotation=45)
 
         summary_df = (
             clean_df[[col1, col2]].dropna()[[col2, col1]]
@@ -122,6 +126,7 @@ class BivariateAnalyser:
             .sort_values("count", ascending=False)
         )  
 
+        plt.tight_layout()
         return fig, summary_df
 
     def cat_cat_analysis(self, col1: str, col2: str):
@@ -148,4 +153,5 @@ class BivariateAnalyser:
         # chi-square test
         test_result = chi2_contingency(table)
         
+        plt.tight_layout()
         return fig, test_result

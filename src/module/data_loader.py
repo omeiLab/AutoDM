@@ -1,9 +1,11 @@
 import pandas as pd
+import streamlit as st
 
 class DataLoader:
-    def __init__(self):
-        self.data = None
+    def __init__(self, data):
+        self.data = data
 
+    # @st.cache_data
     def load_data(self, file) -> pd.DataFrame:
         '''
         Load data from a CSV file.
