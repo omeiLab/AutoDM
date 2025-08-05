@@ -45,7 +45,8 @@ def data_summary(eda):
                     - 📂 Data Type: {summary["dtype"][0]}
                     - ❓ Missing Ratio: {(overview['missing_by_column'][col_name]/overview['rows']):.1%}
                 """)
-            if summary["dtype"][0] == "numerical":
+            dtype =  summary["dtype"][0]
+            if dtype == "numerical":
                 descriptive = pd.DataFrame(summary)
                 descriptive = descriptive.drop(['dtype'], axis=1)
                 st.dataframe(descriptive)
@@ -54,7 +55,7 @@ def data_summary(eda):
                 plot = eda.plot_numeric(col_name)
                 st.pyplot(plot)
                 plt.close(plot)
-            else:
+            elif dtype == "categorical":
                 # visualization
                 plot = eda.plot_categorical(col_name)
 
@@ -63,3 +64,11 @@ def data_summary(eda):
                     plt.close(plot)
                 else:
                     st.warning("High Cardinality. Too many categories to plot.")
+            elif dtype == "datetime":
+                period = eda.infer_time_granularity(col_name)
+                period_tabs = st.tabs(period)
+                for p, period_tab in zip(period, period_tabs):
+                    with period_tab:
+                        plot = eda.plot_datetime(col_name, p)
+                        st.pyplot(plot)
+                        plt.close(plot)

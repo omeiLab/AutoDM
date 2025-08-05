@@ -83,13 +83,15 @@ class EdaAnalyser:
             return None
 
         # take top-K
-        k = min(k, series.nunique())
-        counts = series.value_counts()
-        top_k = counts[:k]
-        others_sum = counts[k:].sum()
-        plot_data = top_k.copy()
-        if others_sum > 0:
-            plot_data["Others"] = others_sum
+        if k < series.nunique():
+            counts = series.value_counts()
+            top_k = counts[:k]
+            others_sum = counts[k:].sum()
+            plot_data = top_k.copy()
+            if others_sum > 0:
+                plot_data["Others"] = others_sum
+        else:
+            plot_data = series.value_counts()
 
         fig, ax = plt.subplots(1, 2, figsize = (12, 6))
 
@@ -100,6 +102,67 @@ class EdaAnalyser:
 
         # pie plot
         ax[1].pie(plot_data.values, labels=plot_data.index, startangle=140, pctdistance=0.8,)
+
+        plt.tight_layout()
+        return fig
+    
+    def infer_time_granularity(self, col_name):
+        granularity = []
+        dt = self.df[col_name].dropna()
+        
+        if dt.dt.second.nunique() > 1:
+            granularity.append('second')
+        if dt.dt.minute.nunique() > 1:
+            granularity.append('minute')
+        if dt.dt.hour.nunique() > 1:
+            granularity.append('hour')
+        if dt.dt.dayofweek.nunique() > 1:
+            granularity.append('dayofweek')
+        if dt.dt.day.nunique() > 1:
+            granularity.append('day')
+        if dt.dt.month.nunique() > 1:
+            granularity.append('month')
+        if dt.dt.year.nunique() > 1:
+            granularity.append('year')
+        
+        return granularity
+
+    def plot_datetime(self, col_name, period):
+        series = self.df[col_name].dropna()
+
+        if period == 'year':
+            dt = series.dt.year.value_counts().sort_index()
+            xlabel = 'Year'
+        elif period =='month':
+            dt = series.dt.month.value_counts().sort_index()
+            xlabel = 'Month'
+        elif period == 'day':
+            dt = series.dt.day.value_counts().sort_index()
+            xlabel = 'Day'
+        elif period == 'dayofweek':
+            # set 0 - 6 to Monday - Sunday
+            dt = series.dt.dayofweek.value_counts().sort_index()
+            day_names = {
+                0: 'Mon', 1: 'Tue', 2: 'Wed', 3: 'Thu', 4: 'Fri', 5: 'Sat', 6: 'Sun'
+            }
+            dt.index = dt.index.map(day_names)
+            xlabel = 'Day of Week'
+        elif period == 'hour':
+            dt = series.dt.hour.value_counts().sort_index()
+            xlabel = 'Hour'
+        elif period =='minute':
+            dt = series.dt.minute.value_counts().sort_index()
+            xlabel = 'Minute'
+        elif period =='second':
+            dt = series.dt.second.value_counts().sort_index()
+            xlabel = 'Second'
+
+        # count plot
+        fig, ax = plt.subplots(1, 1, figsize = (12, 6))
+        sns.barplot(x=dt.index, y=dt.values, ax=ax, color="skyblue")
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel('Count')
+        ax.set_title(f"Count of {col_name} by {period}")
 
         plt.tight_layout()
         return fig
