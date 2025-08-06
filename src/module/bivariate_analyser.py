@@ -48,28 +48,44 @@ class BivariateAnalyser:
             - 3: categorical vs categorical
 
             - -1: high cardinality categorical variable
+
+        Dtypes:
+            - 0: numerical
+            - 1: categorical
+            - 2: datetime
         '''
-        if self.dtypes[col1] == "numerical" and self.dtypes[col2] == "numerical":
+        mapping = {
+            "numerical": 0, "categorical": 1, "datetime": 2
+        }
+        dtype1, dtype2 = mapping[self.dtypes[col1]], mapping[self.dtypes[col2]]
+
+        # numerical vs numerical
+        if dtype1 + dtype2 == 0:
             fig, corr = self.num_num_analysis(col1, col2, hue_col)
             return 1, fig, corr
         
-        elif self.dtypes[col1] == "numerical" and self.dtypes[col2] == "categorical":
-            if self.is_high_cardinality(self.df[col2]):
+        # numerical vs categorical
+        elif dtype1 + dtype2 == 1:
+            cat = col1 if dtype1 == 1 else col2
+            num = col1 if dtype1 == 0 else col2
+            if self.is_high_cardinality(self.df[cat]):
                 return -1, None, None
-            fig, summary_df = self.num_cat_analysis(col1, col2, hue_col=hue_col)
+            fig, summary_df = self.num_cat_analysis(num, cat, hue_col=hue_col)
             return 2, fig, summary_df
         
-        elif self.dtypes[col1] == "categorical" and self.dtypes[col2] == "numerical":
-            if self.is_high_cardinality(self.df[col1]):
-                return -1, None, None
-            fig, summary_df = self.num_cat_analysis(col2, col1, hue_col=hue_col)
-            return 2, fig, summary_df
-        
-        elif self.dtypes[col1] == "categorical" and self.dtypes[col2] == "categorical":
+        # categorical vs categorical
+        elif dtype1 == dtype2 == 1:
             if self.is_high_cardinality(self.df[col1]) or self.is_high_cardinality(self.df[col2]):
                 return -1, None, None
             fig, test_result = self.cat_cat_analysis(col1, col2)
             return 3, fig, test_result
+        
+        # numerical vs datetime
+        elif dtype1 + dtype2 == 2:
+            num = col1 if dtype1 == 0 else col2
+            date = col1 if dtype1 == 2 else col2
+            fig, _ = self.num_date_analysis(num, date)
+            return 4, fig, None
         
 
     def num_num_analysis(self, col1: str, col2: str, hue_col = None):
@@ -95,32 +111,32 @@ class BivariateAnalyser:
         plt.tight_layout()
         return fig, corr_coef
     
-    def num_cat_analysis(self, col1: str, col2: str, k = 10, hue_col = None):
+    def num_cat_analysis(self, num: str, cat: str, k = 10, hue_col = None):
         '''
         please make sure that col1 is numerical and col2 is categorical
         '''
-        clean_df = self.df[[col1, col2, hue_col]] if hue_col else self.df[[col1, col2]]
+        clean_df = self.df[[num, cat, hue_col]] if hue_col else self.df[[num, cat]]
         clean_df = clean_df.dropna()
 
         # take top-K
-        clean_df[col2] = self.compress_categories(clean_df[col2], k)
+        clean_df[cat] = self.compress_categories(clean_df[cat], k)
 
         fig, ax = plt.subplots(1, 2, figsize = (12, 6))
 
         # box plot
-        sns.boxplot(x = col2, y = col1, data = clean_df, ax = ax[0])
+        sns.boxplot(x = cat, y = num, data = clean_df, ax = ax[0])
         ax[0].set_title(f'Box plot')
         ax[0].tick_params(axis='x', rotation=45)
 
         # strip plot
-        sns.stripplot(x = col2, y = col1, data = clean_df, ax = ax[1], jitter = True, hue=hue_col, dodge=True)
+        sns.stripplot(x = cat, y = num, data = clean_df, ax = ax[1], jitter = True, hue=hue_col, dodge=True)
         ax[1].set_title(f'Strip plot')
         ax[1].tick_params(axis='x', rotation=45)
 
         summary_df = (
-            clean_df[[col1, col2]].dropna()[[col2, col1]]
+            clean_df[[num, cat]].dropna()[[cat, num]]
             .dropna()
-            .groupby(col2)[col1]
+            .groupby(cat)[num]
             .agg(["count", "mean", "std", "min", "max"])
             .reset_index()
             .sort_values("count", ascending=False)
@@ -155,3 +171,13 @@ class BivariateAnalyser:
         
         plt.tight_layout()
         return fig, test_result
+    
+    def num_date_analysis(self, num: str, date: str):
+        clean_df = self.df[[num, date]].dropna()
+
+        # line plot
+        fig, ax = plt.subplots(1, 1, figsize = (12, 6))
+        sns.lineplot(x = date, y = num, data = clean_df, ax = ax)
+        ax.set_title(f'Line plot')
+
+        return fig, None

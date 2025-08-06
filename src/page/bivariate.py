@@ -48,6 +48,7 @@ def show_relationship(eda, f1, f2):
         - 1: numerical vs numerical,     summary = correlation coefficient
         - 2: numerical vs categorical,   summary = groupby analysis
         - 3: categorical vs categorical, summary = chi-square test
+        - 4: numerical vd datetime,      summary = None
 
         - -1: high cardinality,          summary = None
     '''
@@ -95,5 +96,9 @@ def show_relationship(eda, f1, f2):
         """)
         if summary[1] < 0.05:
             st.info("The relationship between the two features is significant.")
+        st.pyplot(plot)
+        plt.close(plot)
+
+    elif status == 4:
         st.pyplot(plot)
         plt.close(plot)

@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from module.eda_analyser import EdaAnalyser
+from module.EDAnalyser.AnalyserFactory import AnalyserFactory
 
 def page_univariate_eda():
     '''
@@ -14,18 +14,16 @@ def page_univariate_eda():
 
     data = st.session_state["data"]
     preview(data)
-
-    eda = EdaAnalyser(data)
-    data_summary(eda)
+    data_summary(data)
 
 @st.cache_data
 def preview(data):
     st.write("## Data Preview")      
     st.dataframe(data.head(5))
 
-def data_summary(eda):
+def data_summary(data):
     st.write("## Data Summary")  
-    overview = eda.summarize_overview()
+    overview = summarize_overview(data)
 
     # Use st.metrics to perform 
     col1, col2, col3 = st.columns(3)
@@ -34,41 +32,44 @@ def data_summary(eda):
     col3.metric("Missing Values", f"{overview['missing_values']}")
 
     # Use st.tabs to show details of columns
-    cols = eda.df.columns.tolist()
+    cols = data.columns.tolist()
     tabs = st.tabs(cols)
     for col_name, tab in zip(cols, tabs):
+        eda = AnalyserFactory.create(data, col_name)
         with tab:
-            summary = eda.describe_numeric(col_name)
+            analyse = eda.analyse(overview)
+            dtype = analyse["dtype"]
             st.markdown(f"""
                 **Column Information**
-                
-                    - 📂 Data Type: {summary["dtype"][0]}
-                    - ❓ Missing Ratio: {(overview['missing_by_column'][col_name]/overview['rows']):.1%}
+                        
+                    - 📂 Data Type: {dtype}
+                    - ❓ Missing Ratio: {(analyse["missing_ratio"]):.1%}
                 """)
-            dtype =  summary["dtype"][0]
-            if dtype == "numerical":
-                descriptive = pd.DataFrame(summary)
-                descriptive = descriptive.drop(['dtype'], axis=1)
-                st.dataframe(descriptive)
-
-                # visualization
-                plot = eda.plot_numeric(col_name)
-                st.pyplot(plot)
-                plt.close(plot)
-            elif dtype == "categorical":
-                # visualization
-                plot = eda.plot_categorical(col_name)
-
-                if plot is not None:
-                    st.pyplot(plot)
-                    plt.close(plot)
-                else:
-                    st.warning("High Cardinality. Too many categories to plot.")
-            elif dtype == "datetime":
-                period = eda.infer_time_granularity(col_name)
+            
+            ## Datetime should be treated specially due to granularity matters
+            if dtype == "datetime":
+                period = eda.granularity
                 period_tabs = st.tabs(period)
                 for p, period_tab in zip(period, period_tabs):
                     with period_tab:
-                        plot = eda.plot_datetime(col_name, p)
+                        plot = eda.visualize_by_period(p)
                         st.pyplot(plot)
                         plt.close(plot)
+            else:
+                if analyse["summary"] is not None:
+                    st.dataframe(analyse["summary"])
+                if analyse["plot"] is not None:
+                    st.pyplot(analyse["plot"])
+                    plt.close(analyse["plot"])
+
+
+def summarize_overview(df) -> dict:
+    '''
+    Summarize the overview of the DataFrame.
+    '''
+    return {
+        "rows": df.shape[0],
+        "columns": df.shape[1],
+        "missing_values": df.isnull().sum().sum(),
+        "missing_by_column": df.isnull().sum().to_dict()
+    }
