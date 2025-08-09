@@ -25,6 +25,9 @@ class CategoricalAnalyser(BaseAnalyser):
         return None
 
     def _visualize(self):
+        if not self._validate():
+            return None
+        
         plot_data = self._compress_categories().value_counts()
         fig, ax = plt.subplots(1, 2, figsize = (12, 6))
 

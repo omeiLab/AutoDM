@@ -37,7 +37,7 @@ def data_summary(data):
     for col_name, tab in zip(cols, tabs):
         eda = AnalyserFactory.create(data, col_name)
         with tab:
-            analyse = eda.analyse(overview)
+            analyse = eda.analyse(overview) # type: ignore
             dtype = analyse["dtype"]
             st.markdown(f"""
                 **Column Information**
@@ -48,13 +48,13 @@ def data_summary(data):
             
             ## Datetime should be treated specially due to granularity matters
             if dtype == "datetime":
-                period = eda.granularity
+                period = eda.granularity # type: ignore
                 period_tabs = st.tabs(period)
                 for p, period_tab in zip(period, period_tabs):
                     with period_tab:
-                        plot = eda.visualize_by_period(p)
-                        st.pyplot(plot)
-                        plt.close(plot)
+                        plot = eda.visualize_by_period(p) # type: ignore
+                        st.pyplot(plot) # type: ignore
+                        plt.close(plot) # type: ignore
             else:
                 if analyse["summary"] is not None:
                     st.dataframe(analyse["summary"])

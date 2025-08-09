@@ -13,4 +13,4 @@ A platform for automatically data mining.
 
 - **2025-07-26**: Univariate analysis added. Include basic descriptive statistics and visualizations for each features.
 
-- **2025-08-6**: Add datetime vs numerical analysis. Also refactor the code to make it more modular and extensible.
+- **2025-08-9**: Add datetime vs numerical analysis w/ seasonality. Also refactor the code to make it more modular and extensible.

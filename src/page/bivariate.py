@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from module.bivariate_analyser import BivariateAnalyser
+from module.EDAnalyser.utils import classify_dtype
+from module.EDAnalyser.AnalyserFactory import BivariateAnalyserFactory
 
 def page_bivariate_eda():
     st.title("Bivariate EDA")
@@ -15,14 +16,18 @@ def page_bivariate_eda():
     # choose columns
     st.write("## Data Relationships Analysis")
     st.write("Select two features to compare their relationships.")
-    f1, f2 = st.columns(2)
+    st.write("The hue (label coloring) option is available for categorical features only.")
+
+    f1, f2, h = st.columns(3)
     with f1:
         col1 = st.selectbox("📌 Feature 1", data.columns, key="bivariate_col1")
     with f2:
         col2 = st.selectbox("📌 Feature 2", data.columns, key="bivariate_col2")
+    with h:
+        candidates = [c for c in data.columns if classify_dtype(data[c]) == "categorical"]
+        hue = st.selectbox("🌈 Hue", [None] + candidates, key="bivariate_hue", placeholder=None)
 
-    eda = BivariateAnalyser(data)
-    show_relationship(eda, col1, col2)
+    show_relationship(col1, col2, hue)
 
 @st.cache_data
 def preview(data):
@@ -42,63 +47,21 @@ def enable_hue(eda, f1, f2):
             return None
     return None
 
-def show_relationship(eda, f1, f2):
-    '''
-    Analysis status:
-        - 1: numerical vs numerical,     summary = correlation coefficient
-        - 2: numerical vs categorical,   summary = groupby analysis
-        - 3: categorical vs categorical, summary = chi-square test
-        - 4: numerical vd datetime,      summary = None
-
-        - -1: high cardinality,          summary = None
-    '''
+def show_relationship(f1, f2, hue):
     if f1 == f2:
         st.warning("Cannot compare a feature with itself.")
         st.stop()
-    
-    status, plot, summary = eda.analyse(f1, f2)
-
-    if status == -1:
-        st.warning(f"High Cardinality. Cannot perform analysis.")
+    if f1 == hue or f2 == hue:
+        st.warning("Cannot enable label coloring while comparing with label column.")
         st.stop()
 
-    elif status == 1:
-        label_col = enable_hue(eda, f1, f2)
-        if label_col is not None:
-            _, plot, summary = eda.analyse(f1, f2, label_col)
-
-        st.markdown(f"""
-        ```
-        Correlation Coefficient: {summary:.4f}
-        ```
-        """)
-        st.pyplot(plot)
-        plt.close(plot)
-
-    elif status == 2:
-        label_col = enable_hue(eda, f1, f2)
-        if label_col is not None:
-            _, plot, summary = eda.analyse(f1, f2, label_col)
-
-        with st.expander("Groupby Analysis"):
-            st.dataframe(summary)
-        st.pyplot(plot)
-        plt.close(plot)
-
-    elif status == 3:
-        # print(summary)
-        st.markdown(f"""
-        ```
-        Chi-Square Test: {summary[0]:.4f}
-        p-value: {summary[1]:.4f}
-        Degree of Freedom: {summary[2]}
-        ```
-        """)
-        if summary[1] < 0.05:
-            st.info("The relationship between the two features is significant.")
-        st.pyplot(plot)
-        plt.close(plot)
-
-    elif status == 4:
-        st.pyplot(plot)
-        plt.close(plot)
+    eda = BivariateAnalyserFactory.create(st.session_state["data"], f1, f2, hue)
+    analyse = eda.analyse() # type: ignore
+    if analyse["summary"] is not None:
+        expand = st.expander(analyse["name"])
+        with expand:
+            st.dataframe(analyse["summary"])
+    if analyse["plot"] is not None:
+        st.pyplot(analyse["plot"])
+        plt.close(analyse["plot"])
+    
