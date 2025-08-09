@@ -7,6 +7,7 @@ from module.EDAnalyser.Bivariate.NumNumAnalyser import NumNumAnalyser
 from module.EDAnalyser.Bivariate.NumCatAnalyser import NumCatAnalyser
 from module.EDAnalyser.Bivariate.CatCatAnalyser import CatCatAnalyser
 from module.EDAnalyser.Bivariate.NumTimeAnalyser import NumTimeAnalyser
+from module.EDAnalyser.Bivariate.CatTimeAnalyser import CatTimeAnalyser
 
 class AnalyserFactory:
     _cache = {}
@@ -47,8 +48,10 @@ class BivariateAnalyserFactory:
             analyser = NumCatAnalyser(df, col1, col2, hue)
         elif dtype1 == 'categorical' and dtype2 == 'categorical':
             analyser = CatCatAnalyser(df, col1, col2, hue)
-        elif dtype1 == 'numerical' and dtype2 == 'datetime' or (dtype1 == 'datetime' and dtype2 == 'numerical'):
-            analyser = NumTimeAnalyser(df, col1, col2, hue)
+        elif (dtype1 == 'numerical' and dtype2 == 'datetime') or (dtype1 == 'datetime' and dtype2 == 'numerical'):
+            analyser = NumTimeAnalyser(df, col1, col2, None)
+        elif (dtype1 == 'categorical' and dtype2 == 'datetime') or (dtype1 == 'datetime' and dtype2 == 'categorical'):
+            analyser = CatTimeAnalyser(df, col1, col2, None)
         
         BivariateAnalyserFactory._cache[(col1, col2, hue)] = analyser
         return analyser

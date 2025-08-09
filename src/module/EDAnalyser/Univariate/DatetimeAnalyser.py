@@ -66,7 +66,7 @@ class DatetimeAnalyser(BaseAnalyser):
             dt = self.series.dt.second.value_counts().sort_index()
             xlabel = 'Second'
 
-        return dt, xlabel
+        return dt, xlabel # type: ignore
     
     def _visualize(self):
         return None

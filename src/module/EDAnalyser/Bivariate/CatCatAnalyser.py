@@ -5,6 +5,8 @@ from scipy.stats import chi2_contingency
 from module.EDAnalyser.Bivariate.BaseBivariateAnalyser import BaseAnalyser
 
 class CatCatAnalyser(BaseAnalyser):
+
+    # TODO: fix this function
     def _validate(self):
         def _is_high_cardinality(self, threshold=0.5):
             return self.series.nunique() / len(self.series) > threshold
@@ -20,7 +22,10 @@ class CatCatAnalyser(BaseAnalyser):
         return cat_series
     
     def _get_contingenncy_table(self):
-        return pd.crosstab(self.clean_df[self.col1], self.clean_df[self.col2])
+        clean_copy = self.clean_df.copy()
+        clean_copy[self.col1] = self._compress_categories(clean_copy[self.col1])
+        clean_copy[self.col2] = self._compress_categories(clean_copy[self.col2])
+        return pd.crosstab(clean_copy[self.col1], clean_copy[self.col2])
     
     def _get_summary_name(self):
         return "Chi-square test"
@@ -32,7 +37,7 @@ class CatCatAnalyser(BaseAnalyser):
             "Test Statistic": [test_result[0]],
             "p-value": [test_result[1]],
             "Degree of Freedom": [test_result[2]]
-        })
+        }).round(4)
 
     
     def _visualize(self):

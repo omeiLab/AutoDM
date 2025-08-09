@@ -64,7 +64,7 @@ class NumTimeAnalyser(BaseAnalyser):
             "R-squared": [r_value**2], # type: ignore
             "P-value": [p_value],
             "Standard Error": [std_err]
-        })
+        }).round(4)
     
     def _visualize(self):
         fig, ax = plt.subplots(1, 2, figsize = (12, 6))

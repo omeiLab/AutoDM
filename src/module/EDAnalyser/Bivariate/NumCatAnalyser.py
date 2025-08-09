@@ -40,7 +40,7 @@ class NumCatAnalyser(BaseAnalyser):
             .agg(["count", "mean", "std", "min", "max"])
             .reset_index()
             .sort_values("count", ascending=False)
-        )
+        ).round(4)
         return summary_df
 
     

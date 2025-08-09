@@ -15,13 +15,13 @@ class NumNumAnalyser(BaseAnalyser):
         corr_coef = self.clean_df[self.col1].corr(self.clean_df[self.col2])
         slope, intercept, r_value, p_value, std_err = linregress(self.clean_df[self.col1], self.clean_df[self.col2])
         return pd.DataFrame({
-            "Correlation Coefficient": [corr_coef],
+            "Correlation Coefficient": [round(corr_coef, 4)],
             "Slope": [slope],
             "Intercept": [intercept],
             "R-squared": [r_value**2], # type: ignore
             "P-value": [p_value],
             "Standard Error": [std_err]
-        })
+        }).round(4)
     
     def _visualize(self):
         fig, ax = plt.subplots(1, 2, figsize = (12, 6))

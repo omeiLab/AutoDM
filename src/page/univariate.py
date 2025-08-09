@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from module.EDAnalyser.AnalyserFactory import AnalyserFactory
+from module.EDAnalyser.Univariate.DatetimeAnalyser import DatetimeAnalyser
 
 def page_univariate_eda():
     '''
@@ -47,12 +48,12 @@ def data_summary(data):
                 """)
             
             ## Datetime should be treated specially due to granularity matters
-            if dtype == "datetime":
-                period = eda.granularity # type: ignore
+            if isinstance(eda, DatetimeAnalyser):
+                period = eda.granularity 
                 period_tabs = st.tabs(period)
                 for p, period_tab in zip(period, period_tabs):
                     with period_tab:
-                        plot = eda.visualize_by_period(p) # type: ignore
+                        plot = eda.visualize_by_period(p) 
                         st.pyplot(plot) # type: ignore
                         plt.close(plot) # type: ignore
             else:

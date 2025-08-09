@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from module.EDAnalyser.Bivariate.CatTimeAnalyser import CatTimeAnalyser
 from module.EDAnalyser.utils import classify_dtype
 from module.EDAnalyser.AnalyserFactory import BivariateAnalyserFactory
 
@@ -57,11 +58,27 @@ def show_relationship(f1, f2, hue):
 
     eda = BivariateAnalyserFactory.create(st.session_state["data"], f1, f2, hue)
     analyse = eda.analyse() # type: ignore
-    if analyse["summary"] is not None:
-        expand = st.expander(analyse["name"])
-        with expand:
-            st.dataframe(analyse["summary"])
-    if analyse["plot"] is not None:
-        st.pyplot(analyse["plot"])
-        plt.close(analyse["plot"])
+
+    # specialize for categorical vs datetime
+    if isinstance(eda, CatTimeAnalyser):
+        period = eda.granularity 
+        period_tabs = st.tabs(period)
+        for p, period_tab in zip(period, period_tabs):
+            with period_tab:
+                analyse = eda.analyse_by_period(p)
+                if analyse["summary"] is not None:
+                    expand = st.expander(f"{p} Summary")
+                    with expand:
+                        st.dataframe(analyse["summary"])
+                if analyse["plot"] is not None:
+                    st.pyplot(analyse["plot"])
+                    plt.close(analyse["plot"])
+    else:
+        if analyse["summary"] is not None:
+            expand = st.expander(analyse["name"])
+            with expand:
+                st.dataframe(analyse["summary"])
+        if analyse["plot"] is not None:
+            st.pyplot(analyse["plot"])
+            plt.close(analyse["plot"])
     
