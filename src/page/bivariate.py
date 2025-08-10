@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from module.EDAnalyser.Bivariate.CatTimeAnalyser import CatTimeAnalyser
 from module.EDAnalyser.utils import classify_dtype
 from module.EDAnalyser.AnalyserFactory import BivariateAnalyserFactory
@@ -13,6 +15,13 @@ def page_bivariate_eda():
 
     data = st.session_state["data"]
     preview(data)
+
+    # correlation matrix
+    expand = st.expander("Correlation Matrix")
+    with expand:
+        corr_matrix = correlation_matrix(data)
+        st.pyplot(corr_matrix)
+        plt.close(corr_matrix)
     
     # choose columns
     st.write("## Data Relationships Analysis")
@@ -81,4 +90,11 @@ def show_relationship(f1, f2, hue):
         if analyse["plot"] is not None:
             st.pyplot(analyse["plot"])
             plt.close(analyse["plot"])
-    
+
+def correlation_matrix(data):
+    numerical_cols = [c for c in data.columns if classify_dtype(data[c]) == "numerical"]
+    corr_matrix = data[numerical_cols].corr()
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(corr_matrix, annot=True, cmap="coolwarm")
+    plt.title("Correlation Matrix")
+    return plt.gcf()
