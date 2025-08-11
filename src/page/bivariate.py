@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from module.EDAnalyser.Bivariate.CatTimeAnalyser import CatTimeAnalyser
-from module.EDAnalyser.utils import classify_dtype
+from module.utils import classify_dtype
 from module.EDAnalyser.AnalyserFactory import BivariateAnalyserFactory
 
 def page_bivariate_eda():

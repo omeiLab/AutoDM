@@ -1,5 +1,5 @@
 import pandas as pd
-from module.EDAnalyser.utils import classify_dtype
+from module.utils import classify_dtype
 from module.EDAnalyser.Univariate.NumericalAnalyser import NumericalAnalyser
 from module.EDAnalyser.Univariate.CategoricalAnalyser import CategoricalAnalyser
 from module.EDAnalyser.Univariate.DatetimeAnalyser import DatetimeAnalyser

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
-from module.EDAnalyser.utils import classify_dtype
+from module.utils import classify_dtype
 from module.EDAnalyser.Bivariate.BaseBivariateAnalyser import BaseAnalyser
 
 class NumCatAnalyser(BaseAnalyser):

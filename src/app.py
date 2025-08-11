@@ -3,6 +3,7 @@ import pandas as pd
 from module.data_loader import DataLoader
 from page.univariate import page_univariate_eda
 from page.bivariate import page_bivariate_eda
+from page.feature_engineering import page_feature_engineering
 
 def page_intro():
 
@@ -64,6 +65,7 @@ page_names_to_funcs = {
     "-": page_intro,
     "Univariate EDA": page_univariate_eda,
     "Bivariate EDA": page_bivariate_eda,
+    "Feature Engineering": page_feature_engineering
 }
 
 demo_name = st.sidebar.selectbox("Function Pages", page_names_to_funcs.keys())
