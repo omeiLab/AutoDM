@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from page.session import get_df, confirm, undo
 from module.FeatureProcessingHandler.MissingValuesHandler import MissingValuesHandler
 
 def page_feature_engineering():
@@ -8,11 +9,7 @@ def page_feature_engineering():
     Perform univariate EDA on uploaded data.
     '''
     st.title("Feature Engineering")
-    if "data" not in st.session_state or st.session_state["data"] is None:
-        st.warning("Upload your data first.")
-        st.stop()
-    
-    data = st.session_state["data"]
+    data = get_df()
     missing_values_handler(data)
 
 def missing_values_handler(data):
@@ -20,7 +17,18 @@ def missing_values_handler(data):
     st.write("Let's check for missing values in the data.")
     st.write("Choose a column to view the missing values and decide how to handle them.")
     missing_values_handler = MissingValuesHandler(data)
-    build_current_status(missing_values_handler)
+    target_col, method = build_current_status(missing_values_handler)
+    # buttons to confirm or undo
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Confirm"):
+            new_df = missing_values_handler.process(target_col, method)
+            confirm(new_df, f"Impute {target_col} with {method}")
+            st.rerun()
+    with col2:
+        if st.button("Undo"):
+            undo()
+            st.rerun()
 
 # This is for show the current status of missing values in real-time
 def build_current_status(missing_values_handler: MissingValuesHandler):
@@ -56,3 +64,4 @@ def build_current_status(missing_values_handler: MissingValuesHandler):
             plt.close(impute_preview)
         else:
             st.info("No preview available for dropping.")
+    return selected_col, selected_method

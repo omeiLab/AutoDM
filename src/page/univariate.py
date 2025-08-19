@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from page.session import get_df
 from module.EDAnalyser.AnalyserFactory import AnalyserFactory
 from module.EDAnalyser.Univariate.DatetimeAnalyser import DatetimeAnalyser
 
@@ -9,11 +10,7 @@ def page_univariate_eda():
     Perform univariate EDA on uploaded data.
     '''
     st.title("Univariate EDA")
-    if "data" not in st.session_state or st.session_state["data"] is None:
-        st.warning("Upload your data first.")
-        st.stop()
-
-    data = st.session_state["data"]
+    data = get_df()
     preview(data)
     data_summary(data)
 

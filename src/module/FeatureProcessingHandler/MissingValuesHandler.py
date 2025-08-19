@@ -36,6 +36,7 @@ class MissingValuesHandler:
         sns.barplot(y='missing_pct', x='column', data=self.stat, hue='dtype', dodge=False)
         plt.xlabel('Missing Values (%)')
         plt.ylabel('Column')
+        plt.xticks(rotation=45)
         return plt.gcf()
 
     def suggest_imputation(self):
@@ -106,5 +107,12 @@ class MissingValuesHandler:
         else:
             return series_before
 
-
-
+    def process(self, col, method):
+        processed_df = self.df.copy()
+        if method == 'drop row':
+            processed_df = processed_df.dropna(subset=[col])
+        elif method == 'drop column':
+            processed_df = processed_df.drop(columns=[col])
+        else:
+            processed_df[col] = self.impute(processed_df[col], method)
+        return processed_df

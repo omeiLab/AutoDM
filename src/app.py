@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from module.data_loader import DataLoader
+from page.session import init_session
 from page.univariate import page_univariate_eda
 from page.bivariate import page_bivariate_eda
 from page.feature_engineering import page_feature_engineering
@@ -37,7 +38,8 @@ def upload_data():
         type = ['csv']
     )
     data = preview(uploaded_file)
-    st.session_state["data"] = data
+    if data is not None:
+        init_session(data)
 
 @st.cache_data
 def load_and_cast(file) -> pd.DataFrame:

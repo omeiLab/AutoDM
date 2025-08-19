@@ -12,3 +12,4 @@ def classify_dtype(series, cat_threshold = 20):
     else:
         # Also include boolean and object types as categorical
         return 'categorical'
+    

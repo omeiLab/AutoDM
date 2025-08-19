@@ -3,17 +3,14 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from page.session import get_df
 from module.EDAnalyser.Bivariate.CatTimeAnalyser import CatTimeAnalyser
 from module.utils import classify_dtype
 from module.EDAnalyser.AnalyserFactory import BivariateAnalyserFactory
 
 def page_bivariate_eda():
     st.title("Bivariate EDA")
-    if "data" not in st.session_state or st.session_state["data"] is None:
-        st.warning("Upload your data first.")
-        st.stop()
-
-    data = st.session_state["data"]
+    data = get_df()
     preview(data)
 
     # correlation matrix
