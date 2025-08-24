@@ -68,7 +68,7 @@ class MissingValuesHandler:
     def impute_plot_preview(self, col, method):
         dtype = classify_dtype(self.df[col])
         series_before = self.df[col].copy()
-        series_after = self.impute(series_before, method)
+        series_after = self._impute(series_before, method)
 
         fig, ax = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
 
@@ -89,7 +89,7 @@ class MissingValuesHandler:
         return fig
 
 
-    def impute(self, series_before, method):
+    def _impute(self, series_before, method):
         if method == 'mean':
             return series_before.fillna(series_before.mean())
         elif method =='median':
@@ -114,5 +114,5 @@ class MissingValuesHandler:
         elif method == 'drop column':
             processed_df = processed_df.drop(columns=[col])
         else:
-            processed_df[col] = self.impute(processed_df[col], method)
+            processed_df[col] = self._impute(processed_df[col], method)
         return processed_df

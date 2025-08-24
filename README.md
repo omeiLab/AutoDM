@@ -17,4 +17,4 @@ A platform for automatically data mining.
 
 - **2025-08-10**: Add datetime vs categorical bivariate analysis & correlation matrix.
 
-- **2025-08-19**: Add confirm & undo for dealing missing values.
+- **2025-08-25**: Add feature engineering: categorical encoding.
