@@ -10,18 +10,21 @@ class NumericalAnalyser(BaseAnalyser):
     def _get_dtype(self):
         return "numerical"
     
-    def _summary(self):
-        col = self.col
+    def summary(self, col):
+        """
+        Returns a summary of the numerical column.
+        """
         report = {
-            'mean' : [self.df[col].mean()],
-            'std'  : [self.df[col].std()],
-            'min'  : [self.df[col].min()],
-            'max'  : [self.df[col].max()],
-            'Q1'   : [self.df[col].quantile(0.25)],
-            'Q3'   : [self.df[col].quantile(0.75)],
-            'IQR'  : [self.df[col].quantile(0.75) - self.df[col].quantile(0.25)],
-            'range': [self.df[col].max() - self.df[col].min()],
-            'skew' : [self.df[col].skew()]
+            'mean'  : [self.df[col].mean()],
+            'std'   : [self.df[col].std()],
+            'min'   : [self.df[col].min()],
+            'max'   : [self.df[col].max()],
+            'median': [self.df[col].median()],
+            'Q1'    : [self.df[col].quantile(0.25)],
+            'Q3'    : [self.df[col].quantile(0.75)],
+            'IQR'   : [self.df[col].quantile(0.75) - self.df[col].quantile(0.25)],
+            'range' : [self.df[col].max() - self.df[col].min()],
+            'skew'  : [self.df[col].skew()]
         }
         report = pd.DataFrame(report)
         return report
